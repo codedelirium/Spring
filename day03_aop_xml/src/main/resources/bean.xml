@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!--    基于xml的aop配置步骤
+            1.把通知Bean交给spring管理
+            2.使用aop：config标签表名开始aop配置
+            3.使用aop：aspect标签表名配置切面
+            4.在aop：aspect标签的内部使用对应标签来配置通知的类型
+    -->
+    <!--    配置通知-->
+    <!--        配置事务管理器-->
+    <bean id="tranManager" class="cn.koberb.spring.tran.TransectionManager" >
+        <!--        注入Connection工具类-->
+        <property name="conn" ref="connectionUtils"></property>
+    </bean>
+    <!--    配置aop-->
+    <aop:config>
+<!--            配置切面-->
+        <aop:aspect id="dynamicProxy" ref="tranManager">
+            <!--配置切入点-->
+            <!--切入点表达式：execution([修饰符] 返回值类型 包名.类名.方法名(参数))
+                全匹配方式
+                    public void cn.koberb.spring.service.impl.UserServiceImpl.transfer(java.lang.Integer,java.lang.Integer,java.lang.Integer)
+                省略访问修饰符
+                    void cn.koberb.spring.service.impl.UserServiceImpl.transfer(java.lang.Integer,java.lang.Integer,java.lang.Integer)
+                通配返回值类型
+                    * cn.koberb.spring.service.impl.UserServiceImpl.transfer(java.lang.Integer,java.lang.Integer,java.lang.Integer)
+                通配包名
+                    * *.*.*.*.*.UserServiceImpl.transfer(java.lang.Integer,java.lang.Integer,java.lang.Integer)
+                通配当前包及其子包
+                    * cn..UserServiceImpl.transfer(java.lang.Integer,java.lang.Integer,java.lang.Integer)
+                通配类
+                    * cn..*.transfer(java.lang.Integer,java.lang.Integer,java.lang.Integer)
+                通配方法
+                    * cn..*.*(java.lang.Integer,java.lang.Integer,java.lang.Integer)
+                通配有参数
+                    * cn..*.*(*)
+                通配参数
+                    * cn..*.*(..)
+                全通配
+                    * *..*.*(..)
+            -->
+            <aop:pointcut id="service" expression="execution(* cn.koberb.spring.service.impl.*.*(..))"/>
+            <!--    配置通知类型-->
+            <aop:before method="begin" pointcut-ref="service"></aop:before>
+            <aop:after method="commit" pointcut-ref="service"></aop:after>
+            <aop:after-throwing method="rollback" pointcut-ref="service"></aop:after-throwing>
+            <aop:after-returning method="release" pointcut-ref="service"></aop:after-returning>
+        </aop:aspect>
+
+    </aop:config>
+
+<!--    ioc-->
+    <!--配置UserService-->
+    <bean id="userService" class="cn.koberb.spring.service.impl.UserServiceImpl">
+        <!--set方法注入-->
+        <property name="userDao" ref="userDao"></property>
+    </bean>
+    <!--配置UserDao-->
+    <bean id="userDao" class="cn.koberb.spring.dao.impl.UserDaoImpl">
+        <!--set方法注入QueryRunner-->
+        <property name="runner" ref="runner"></property>
+        <!--        注入ConnectionUtils-->
+        <property name="conn" ref="connectionUtils"></property>
+    </bean>
+    <!--    配置Connection工具类-->
+    <bean id="connectionUtils" class="cn.koberb.spring.utils.ConnectionUtils">
+        <!--        注入数据源-->
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!--配置QueryRunner-->
+    <bean id="runner" class="org.apache.commons.dbutils.QueryRunner" scope="prototype"></bean>
+    <!--配置数据源-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="com.mysql.cj.jdbc.Driver"></property>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/test?serverTimezone=GMT"></property>
+        <property name="user" value="root"></property>
+        <property name="password" value="123"></property>
+    </bean>
+
+</beans>

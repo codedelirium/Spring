@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--          配置cglibFactory-->
+    <bean id="cglibFactory" class="cn.koberb.cglib.CglibFactory">
+        <property name="userService" ref="userService"></property>
+        <property name="txcm" ref="tranManager"></property>
+    </bean>
+    <!--    配置基于子类的动态代理-->
+    <bean id="cglibService" factory-bean="cglibFactory" factory-method="getUserService"></bean>
+
+    <!--          配置ProxyFactory-->
+    <bean id="proxyFactory" class="cn.koberb.proxy.ProxyFactory">
+      <property name="userService" ref="userService"></property>
+      <property name="txcm" ref="tranManager"></property>
+    </bean>
+    <!--    配置基于接口的动态代理-->
+    <bean id="proxyService" factory-bean="proxyFactory" factory-method="getUserService"></bean>
+
+    <!--    配置Connection工具类-->
+    <bean id="connectionUtils" class="cn.koberb.spring.utils.ConnectionUtils">
+        <!--        注入数据源-->
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!--        配置事务管理器-->
+    <bean id="tranManager" class="cn.koberb.spring.tran.TransectionManager" >
+        <!--        注入Connection工具类-->
+        <property name="conn" ref="connectionUtils"></property>
+    </bean>
+
+    <!--配置QueryRunner-->
+    <bean id="runner" class="org.apache.commons.dbutils.QueryRunner" scope="prototype">
+<!--        为了事务控制，不从这边那无法控制的连接-->
+<!--        <constructor-arg name="ds" ref="dataSource"></constructor-arg>-->
+    </bean>
+    <!--配置数据源-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="com.mysql.cj.jdbc.Driver"></property>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/test?serverTimezone=GMT"></property>
+        <property name="user" value="root"></property>
+        <property name="password" value="123"></property>
+    </bean>
+
+    <!--配置UserService-->
+    <bean id="userService" class="cn.koberb.spring.service.impl.UserServiceImpl">
+        <!--set方法注入-->
+        <property name="userDao" ref="userDao"></property>
+    </bean>
+    <!--配置UserDao-->
+    <bean id="userDao" class="cn.koberb.spring.dao.impl.UserDaoImpl">
+        <!--set方法注入QueryRunner-->
+        <property name="runner" ref="runner"></property>
+<!--        注入ConnectionUtils-->
+        <property name="conn" ref="connectionUtils"></property>
+    </bean>
+    <!--配置User-->
+    <bean id="user" class="cn.koberb.spring.pojo.User">
+        <!--set方法注入-->
+        <property name="id" value="666"></property>
+        <property name="name" value="xmltest"></property>
+        <property name="birthday" ref="now"></property>
+        <property name="age" value="19"></property>
+    </bean>
+
+    <bean id="now" class="java.util.Date"></bean>
+</beans>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--构造函数注入-->
+    <bean id="ConService" class="cn.koberb.spring.service.impl.UserServiceImpl">
+        <constructor-arg name="name" value="张三"></constructor-arg>
+        <constructor-arg name="age" value="20"></constructor-arg>
+        <constructor-arg name="btd" ref="now"></constructor-arg>
+    </bean>
+    <bean id="now" class="java.util.Date"></bean>
+
+    <!--set方法注入-->
+    <bean id="SetService" class="cn.koberb.spring.service.impl.UserServiceImpl2">
+        <property name="name" value="李四"></property>
+        <property name="age" value="19"></property>
+        <property name="birthday" ref="now"></property>
+    </bean>
+
+
+    <!--复杂类型-->
+    <bean id="CplxService" class="cn.koberb.spring.service.impl.ComplxTypeImpl3">
+        <property name="myStrs">
+            <array><!--list set-->
+                <value>aaa</value>
+                <value>bbb</value>
+                <value>ccc</value>
+            </array>
+        </property>
+        <property name="myList">
+            <list><!--array set-->
+                <value>aaa</value>
+                <value>bbb</value>
+                <value>ccc</value>
+            </list>
+        </property>
+        <property name="mySet">
+            <set><!--list array-->
+                <value>aaa</value>
+                <value>aaa</value>
+                <value>aaa</value>
+            </set>
+        </property>
+        <property name="myMap">
+            <map><!--props-->
+                <entry key="a" value="aaa"></entry>
+                <entry key="b">
+                    <value>bbb</value>
+                </entry>
+            </map>
+        </property>
+        <property name="myProps">
+            <props><!--map-->
+                <prop key="c">ccc</prop>
+                <prop key="d">ddd</prop>
+            </props>
+        </property>
+    </bean>
+</beans>
